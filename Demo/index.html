@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Agentic Data Marketplace — Weather x402 Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #050816;
+      --panel: #0b1020;
+      --accent: #1a4fff;
+      --accent-soft: #1a4fff22;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --danger: #f97373;
+      --success: #4ade80;
+      --border: #1f2933;
+      --mono: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--sans);
+      background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+
+    .title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 0.9fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: linear-gradient(145deg, #020617, #020617, #020617, #020617);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 12px 12px 10px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, #1a4fff22, transparent 55%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      color: var(--muted);
+      background: #020617;
+    }
+
+    .console {
+      background: #020617;
+      border-radius: 10px;
+      border: 1px solid #111827;
+      padding: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.5;
+      height: 260px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #e5e7eb;
+    }
+
+    .console-line-prefix {
+      color: #6b7280;
+    }
+
+    .console-line-agent {
+      color: #38bdf8;
+    }
+
+    .console-line-api {
+      color: #a855f7;
+    }
+
+    .console-line-x402 {
+      color: #f97316;
+    }
+
+    .console-line-decision {
+      color: #4ade80;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: var(--text);
+      font-size: 11px;
+      padding: 6px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #1a4fff, #2563eb);
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 1px #1d4ed8aa, 0 10px 25px rgba(37, 99, 235, 0.45);
+    }
+
+    button.primary:hover {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      transform: translateY(-0.5px);
+    }
+
+    button.secondary:hover {
+      background: #020617;
+      border-color: #374151;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 9px;
+    }
+
+    .btn-sub {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status-chip {
+      border-radius: 999px;
+      padding: 2px 8px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #4b5563;
+    }
+
+    .dot.green {
+      background: var(--success);
+    }
+
+    .dot.red {
+      background: var(--danger);
+    }
+
+    .dot.blue {
+      background: var(--accent);
+    }
+
+    .metric-card {
+      border-radius: 10px;
+      border: 1px solid #111827;
+      background: #020617;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .metric-value.high {
+      color: var(--danger);
+    }
+
+    .metric-value.low {
+      color: var(--success);
+    }
+
+    .log {
+      background: #020617;
+      border-radius: 10px;
+      border: 1px solid #111827;
+      padding: 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.5;
+      height: 180px;
+      overflow-y: auto;
+      color: #e5e7eb;
+    }
+
+    .log-entry {
+      margin-bottom: 2px;
+    }
+
+    .log-entry span {
+      color: #6b7280;
+    }
+
+    .hint {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .footer span strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="title-row">
+        <span class="badge">Live Demo</span>
+        <div class="title">Agentic Data Marketplace — Weather x402 Flow</div>
+      </div>
+      <div class="subtitle">
+        Autonomous agent buys premium weather risk data via <strong>x402</strong>, then decides whether to reroute a shipment.
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Agent Console -->
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-header">
+            <div class="panel-title">Agent Console</div>
+            <div class="pill">Hermes‑style autonomous agent</div>
+          </div>
+
+          <div class="controls">
+            <button id="btn-run" class="primary">
+              <div>
+                <div class="btn-label">Run Full Demo</div>
+                <div class="btn-sub">Agent → 402 → x402 → Token → Risk → Decision</div>
+              </div>
+            </button>
+            <button id="btn-reset" class="secondary">
+              <div>
+                <div class="btn-label">Reset</div>
+                <div class="btn-sub">Clear state & logs</div>
+              </div>
+            </button>
+          </div>
+
+          <div class="console" id="agent-console"></div>
+          <div class="hint">
+            Watch the agent handle <strong>402 Payment Required</strong>, pay via <strong>x402</strong>, and make an autonomous routing decision.
+          </div>
+        </div>
+      </div>
+
+      <!-- API + x402 Simulation -->
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-header">
+            <div class="panel-title">Weather API + x402 Stub</div>
+            <div class="pill">Simulated provider & payment layer</div>
+          </div>
+
+          <div class="status-row">
+            <div class="status-chip">
+              <div class="dot blue"></div>
+              <span id="status-invoice">Invoice: none</span>
+            </div>
+            <div class="status-chip">
+              <div class="dot" id="dot-token"></div>
+              <span id="status-token">Token: none</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Current Request</div>
+            <div class="metric-value" id="metric-request">/weather/risk?port=rotterdam</div>
+            <div class="metric-sub">Premium endpoint requires x402 payment.</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Last Response</div>
+            <div class="metric-value" id="metric-response">—</div>
+            <div class="metric-sub" id="metric-response-sub">Awaiting agent request.</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Weather Risk Score</div>
+            <div class="metric-value" id="metric-risk">—</div>
+            <div class="metric-sub" id="metric-risk-sub">Premium data locked behind 402.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-header">
+            <div class="panel-title">Marketplace Dashboard</div>
+            <div class="pill">Provider & operator view</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Payments</div>
+            <div class="metric-value" id="metric-payments">0</div>
+            <div class="metric-sub">x402 settlements this session.</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Premium Calls</div>
+            <div class="metric-value" id="metric-premium-calls">0</div>
+            <div class="metric-sub">Successful /weather/risk calls.</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Last Agent Decision</div>
+            <div class="metric-value" id="metric-decision">—</div>
+            <div class="metric-sub" id="metric-decision-sub">Run the demo to see routing decisions.</div>
+          </div>
+
+          <div class="log" id="dashboard-log"></div>
+          <div class="hint">
+            This simulates the provider’s view: who paid, what was accessed, and what the agent decided.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span><strong>Flow:</strong> Agent → 402 Payment Required → x402 Stub → Token → Premium Weather Risk → Decision</span>
+      <span><strong>Lennox Labs</strong> — Agentic Data Marketplace Demo</span>
+    </div>
+  </div>
+
+  <script>
+    // --- Simple in‑memory "backend" state ---
+    let invoice = null;
+    let token = null;
+    let payments = 0;
+    let premiumCalls = 0;
+
+    const agentConsole = document.getElementById("agent-console");
+    const dashboardLog = document.getElementById("dashboard-log");
+
+    const statusInvoice = document.getElementById("status-invoice");
+    const statusToken = document.getElementById("status-token");
+    const dotToken = document.getElementById("dot-token");
+
+    const metricResponse = document.getElementById("metric-response");
+    const metricResponseSub = document.getElementById("metric-response-sub");
+    const metricRisk = document.getElementById("metric-risk");
+    const metricRiskSub = document.getElementById("metric-risk-sub");
+
+    const metricPayments = document.getElementById("metric-payments");
+    const metricPremiumCalls = document.getElementById("metric-premium-calls");
+    const metricDecision = document.getElementById("metric-decision");
+    const metricDecisionSub = document.getElementById("metric-decision-sub");
+
+    const btnRun = document.getElementById("btn-run");
+    const btnReset = document.getElementById("btn-reset");
+
+    function resetState() {
+      invoice = null;
+      token = null;
+      payments = 0;
+      premiumCalls = 0;
+
+      agentConsole.textContent = "";
+      dashboardLog.textContent = "";
+
+      statusInvoice.textContent = "Invoice: none";
+      statusToken.textContent = "Token: none";
+      dotToken.className = "dot";
+
+      metricResponse.textContent = "—";
+      metricResponseSub.textContent = "Awaiting agent request.";
+      metricRisk.textContent = "—";
+      metricRisk.className = "metric-value";
+      metricRiskSub.textContent = "Premium data locked behind 402.";
+
+      metricPayments.textContent = "0";
+      metricPremiumCalls.textContent = "0";
+      metricDecision.textContent = "—";
+      metricDecisionSub.textContent = "Run the demo to see routing decisions.";
+    }
+
+    function logAgent(message, type = "agent") {
+      const line = document.createElement("div");
+      let cls = "console-line-agent";
+      if (type === "api") cls = "console-line-api";
+      if (type === "x402") cls = "console-line-x402";
+      if (type === "decision") cls = "console-line-decision";
+
+      line.innerHTML =
+        '<span class="console-line-prefix">›</span> ' +
+        '<span class="' + cls + '">' + message + "</span>";
+      agentConsole.appendChild(line);
+      agentConsole.scrollTop = agentConsole.scrollHeight;
+    }
+
+    function logDashboard(message) {
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      const ts = new Date().toLocaleTimeString();
+      entry.innerHTML = "<span>[" + ts + "]</span> " + message;
+      dashboardLog.appendChild(entry);
+      dashboardLog.scrollTop = dashboardLog.scrollHeight;
+    }
+
+    // --- Simulated API + x402 logic ---
+
+    function callWeatherRiskAPI(providedToken) {
+      // If no token or invalid token -> 402
+      if (!providedToken || !token || providedToken !== token.value || Date.now() > token.expiresAt) {
+        // Generate invoice
+        invoice = {
+          id: "inv_" + Math.random().toString(36).slice(2, 8),
+          amount: 0.25,
+          currency: "USD",
+          description: "Weather risk score for port=rotterdam",
+          settled: false
+        };
+
+        statusInvoice.textContent = "Invoice: " + invoice.id + " ($" + invoice.amount.toFixed(2) + ")";
+        metricResponse.textContent = "402 Payment Required";
+        metricResponseSub.textContent = "Invoice " + invoice.id + " for premium weather risk data.";
+        logAgent(
+          "API → 402 Payment Required (invoice " + invoice.id + " for $" + invoice.amount.toFixed(2) + ")",
+          "api"
+        );
+        logDashboard("402 issued for /weather/risk (invoice " + invoice.id + ").");
+        return { status: 402, invoice };
+      }
+
+      // Valid token -> return premium data
+      premiumCalls++;
+      metricPremiumCalls.textContent = String(premiumCalls);
+
+      // Generate a pseudo‑random risk score
+      const riskScore = Math.floor(60 + Math.random() * 40); // 60–99
+      const riskLevel = riskScore >= 75 ? "HIGH" : "ELEVATED";
+
+      metricRisk.textContent = riskScore;
+      metricRisk.className = "metric-value " + (riskScore >= 75 ? "high" : "low");
+      metricRiskSub.textContent = "Risk level: " + riskLevel + " for port=rotterdam.";
+
+      metricResponse.textContent = "200 OK";
+      metricResponseSub.textContent = "Premium weather risk data returned.";
+
+      logAgent(
+        "API → 200 OK (risk_score=" + riskScore + ", level=" + riskLevel + ")",
+        "api"
+      );
+      logDashboard(
+        "Premium /weather/risk served (risk_score=" + riskScore + ", level=" + riskLevel + ")."
+      );
+
+      return {
+        status: 200,
+        data: {
+          port: "rotterdam",
+          risk_score: riskScore,
+          risk_level: riskLevel,
+          reasons: [
+            "Severe storm forecast in next 24h",
+            "Port congestion above 80th percentile"
+          ]
+        }
+      };
+    }
+
+    function payInvoice(invoiceId) {
+      if (!invoice || invoice.id !== invoiceId) {
+        logAgent("x402 → No matching invoice to settle.", "x402");
+        return { status: "error" };
+      }
+
+      invoice.settled = true;
+      payments++;
+      metricPayments.textContent = String(payments);
+
+      // Issue token
+      const tokenValue = "tok_" + Math.random().toString(36).slice(2, 8);
+      token = {
+        value: tokenValue,
+        invoiceId: invoice.id,
+        expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes
+      };
+
+      statusToken.textContent = "Token: " + token.value;
+      dotToken.className = "dot green";
+
+      logAgent(
+        "x402 → Invoice " + invoice.id + " settled. Token issued: " + token.value,
+        "x402"
+      );
+      logDashboard("x402 settlement for " + invoice.id + " (token " + token.value + ").");
+
+      return {
+        status: "settled",
+        invoice_id: invoice.id,
+        token: token.value,
+        expires_in: 300
+      };
+    }
+
+    // --- Agent demo flow ---
+
+    async function runDemo() {
+      btnRun.disabled = true;
+      resetState();
+      logAgent("Agent starting weather risk evaluation for port=rotterdam...");
+
+      await sleep(600);
+
+      logAgent("Agent → Requesting /weather/risk?port=rotterdam");
+      const firstResponse = callWeatherRiskAPI(null);
+
+      if (firstResponse.status === 402) {
+        await sleep(700);
+        logAgent(
+          "Agent → Received 402. Evaluating cost $" +
+            firstResponse.invoice.amount.toFixed(2) +
+            " vs potential disruption...",
+          "agent"
+        );
+        await sleep(800);
+        logAgent("Agent → Decision: pay invoice " + firstResponse.invoice.id + " via x402.", "agent");
+
+        await sleep(600);
+        const payResp = payInvoice(firstResponse.invoice.id);
+        if (payResp.status !== "settled") {
+          logAgent("Agent → Payment failed. Aborting.", "agent");
+          btnRun.disabled = false;
+          return;
+        }
+
+        await sleep(700);
+        logAgent("Agent → Retrying /weather/risk with token " + payResp.token + "...");
+        const secondResponse = callWeatherRiskAPI(payResp.token);
+
+        if (secondResponse.status === 200) {
+          await sleep(700);
+          const risk = secondResponse.data.risk_score;
+          const level = secondResponse.data.risk_level;
+          let decision, decisionDetail;
+
+          if (risk >= 75) {
+            decision = "REROUTE SHIPMENT";
+            decisionDetail = "High risk detected. Rerouting via Antwerp.";
+          } else {
+            decision = "PROCEED AS PLANNED";
+            decisionDetail = "Risk acceptable. Keeping original route.";
+          }
+
+          metricDecision.textContent = decision;
+          metricDecisionSub.textContent = decisionDetail;
+
+          logAgent("Agent → Risk score " + risk + " (" + level + ").", "decision");
+          logAgent("Agent → Decision: " + decision + " — " + decisionDetail, "decision");
+          logDashboard("Agent decision: " + decision + " (" + decisionDetail + ").");
+        }
+      }
+
+      await sleep(400);
+      logAgent("Agent flow complete.");
+      btnRun.disabled = false;
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    // --- Wire up buttons ---
+    btnRun.addEventListener("click", () => {
+      if (!btnRun.disabled) runDemo();
+    });
+
+    btnReset.addEventListener("click", () => {
+      resetState();
+      logAgent("State reset. Ready for a new run.");
+    });
+
+    // Initial state
+    resetState();
+    logAgent("Ready. Click “Run Full Demo” to start the x402 weather flow.");
+  </script>
+</body>
+</html>
